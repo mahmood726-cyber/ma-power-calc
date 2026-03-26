@@ -1,8 +1,11 @@
 # MA Power: A Browser-Based Power and Sample Size Calculator for Random-Effects Meta-Analysis
 
-**[AUTHOR_PLACEHOLDER]**
+Mahmood Ahmad^1^
 
-**Correspondence:** [AUTHOR_PLACEHOLDER]
+^1^ Royal Free Hospital, London, United Kingdom
+
+Correspondence: Mahmood Ahmad, mahmood.ahmad2@nhs.net
+ORCID: 0009-0003-7781-4478
 
 **Target journal:** *Research Synthesis Methods*
 
@@ -182,7 +185,7 @@ Planned extensions include power analysis for subgroup comparisons and meta-regr
 
 MA Power provides a free, accessible, browser-based tool for prospective power analysis of random-effects meta-analyses. By lowering the barrier to performing power calculations, we hope to encourage the routine inclusion of power analysis in meta-analytic protocols and to promote more nuanced interpretation of meta-analytic results, particularly when pooled estimates fail to reach statistical significance.
 
-The tool is available at [URL_PLACEHOLDER] and the source code at [REPOSITORY_PLACEHOLDER].
+The tool is available at https://github.com/mahmood726-cyber/ma-power and the source code at https://github.com/mahmood726-cyber/ma-power.
 
 ---
 
