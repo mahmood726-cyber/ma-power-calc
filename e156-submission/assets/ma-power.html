@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MA Power — Meta-Analysis Power &amp; Sample Size Calculator</title>
+<style>
+:root {
+  --bg-primary: #ffffff; --bg-secondary: #f8f9fa; --bg-card: #ffffff;
+  --bg-hero: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  --text-primary: #212529; --text-secondary: #6c757d; --text-muted: #adb5bd;
+  --border-color: #dee2e6; --border-light: #e9ecef;
+  --green: #27ae60; --green-bg: rgba(39,174,96,0.1);
+  --amber: #f39c12; --amber-bg: rgba(243,156,18,0.1);
+  --red: #e74c3c; --red-bg: rgba(231,76,60,0.1);
+  --blue: #2980b9; --purple: #8e44ad; --teal: #16a085; --teal-light: #1abc9c;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+  --radius: 8px; --radius-lg: 12px;
+}
+[data-theme="dark"] {
+  --bg-primary: #121212; --bg-secondary: #1e1e1e; --bg-card: #252525;
+  --bg-hero: linear-gradient(135deg, #0d0d1a 0%, #111827 50%, #0a1628 100%);
+  --text-primary: #e4e4e7; --text-secondary: #a1a1aa; --text-muted: #71717a;
+  --border-color: #3f3f46; --border-light: #2d2d33;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3); --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+
+.hero { background: var(--bg-hero); padding: 1.5rem 2rem 1.2rem; text-align: center; position: relative; }
+.hero-title { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; }
+.hero-subtitle { font-size: 0.9rem; color: rgba(255,255,255,0.65); }
+.theme-toggle { position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0.35rem 0.7rem; border-radius: var(--radius); cursor: pointer; font-size: 0.8rem; }
+.theme-toggle:hover { background: rgba(255,255,255,0.2); }
+.theme-toggle:focus { outline: 2px solid var(--teal-light); }
+
+.tab-bar { display: flex; background: var(--bg-secondary); border-bottom: 2px solid var(--border-color); padding: 0 1rem; overflow-x: auto; }
+.tab-btn { padding: 0.65rem 1.3rem; border: none; background: transparent; color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn:focus { outline: 2px solid var(--teal-light); outline-offset: -2px; }
+.tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); font-weight: 600; }
+.tab-panel { display: none; padding: 1.5rem; max-width: 1000px; margin: 0 auto; }
+.tab-panel.active { display: block; }
+
+.card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow-sm); }
+.card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.75rem; }
+
+label { display: block; font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.2rem; }
+input[type="number"], select { width: 100%; padding: 0.45rem 0.65rem; border: 1px solid var(--border-color); border-radius: var(--radius); font-size: 0.88rem; font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); }
+input:focus, select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(41,128,185,0.15); }
+.form-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+.form-group { display: flex; flex-direction: column; }
+
+.btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.5rem 1.2rem; border: 1px solid transparent; border-radius: var(--radius); font-size: 0.88rem; font-weight: 500; cursor: pointer; font-family: var(--font-sans); }
+.btn:focus { outline: 2px solid var(--teal-light); outline-offset: 2px; }
+.btn-teal { background: var(--teal); color: #fff; font-weight: 600; }
+.btn-teal:hover { background: #128f76; }
+.btn-outline { background: transparent; color: var(--text-primary); border-color: var(--border-color); }
+.btn-outline:hover { background: var(--bg-secondary); }
+.btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.result-box { padding: 1.25rem; border-radius: var(--radius-lg); margin-bottom: 1rem; text-align: center; }
+.result-box .result-value { font-size: 2.5rem; font-weight: 800; line-height: 1.1; }
+.result-box .result-label { font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.3rem; }
+.result-green { background: var(--green-bg); border: 2px solid var(--green); }
+.result-green .result-value { color: var(--green); }
+.result-amber { background: var(--amber-bg); border: 2px solid var(--amber); }
+.result-amber .result-value { color: var(--amber); }
+.result-red { background: var(--red-bg); border: 2px solid var(--red); }
+.result-red .result-value { color: var(--red); }
+
+.svg-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+.svg-container svg { display: block; width: 100%; height: auto; }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.data-table th { background: var(--bg-secondary); padding: 0.5rem 0.6rem; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid var(--border-color); }
+.data-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border-light); }
+.data-table tr:hover { background: var(--bg-secondary); }
+
+.code-block { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 0.75rem; font-family: var(--font-mono); font-size: 0.78rem; overflow-x: auto; white-space: pre-wrap; position: relative; }
+.copy-btn { position: absolute; top: 0.4rem; right: 0.4rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 0.2rem 0.5rem; font-size: 0.72rem; cursor: pointer; }
+
+.radio-group { display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.radio-group label { display: flex; align-items: center; gap: 0.3rem; cursor: pointer; font-size: 0.88rem; color: var(--text-primary); }
+.radio-group input[type="radio"] { width: auto; margin: 0; cursor: pointer; }
+
+@media print { .hero, .tab-bar, .theme-toggle, .btn, button { display: none !important; } .tab-panel { display: block !important; padding: 0; } .card { break-inside: avoid; box-shadow: none; } }
+@media (prefers-reduced-motion: reduce) { * { transition-duration: 0.01ms !important; } }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>
+</head>
+<body>
+
+<header class="hero" role="banner">
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" tabindex="0">Dark Mode</button>
+  <h1 class="hero-title">MA Power</h1>
+  <p class="hero-subtitle">Meta-Analysis Power &amp; Sample Size Calculator</p>
+</header>
+
+<nav class="tab-bar" role="tablist" aria-label="Main navigation">
+  <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-power" id="tab-power" tabindex="0">1. Power</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-sample" id="tab-sample" tabindex="-1">2. Sample Size</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-curve" id="tab-curve" tabindex="-1">3. Power Curve</button>
+  <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-report" id="tab-report" tabindex="-1">4. Report</button>
+</nav>
+
+<!-- ===== TAB 1: POWER CALCULATION ===== -->
+<div class="tab-panel active" role="tabpanel" id="panel-power" aria-labelledby="tab-power">
+  <div class="card">
+    <div class="card-title">Calculate Power for a Planned Meta-Analysis</div>
+    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">Given the expected number of studies, effect size, and heterogeneity, what is the statistical power?</p>
+    <div class="radio-group">
+      <label><input type="radio" name="effectType" value="binary" checked> Binary outcome (OR/RR)</label>
+      <label><input type="radio" name="effectType" value="continuous"> Continuous outcome (SMD/MD)</label>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="pw_k">Number of studies (k)</label>
+        <input type="number" id="pw_k" value="10" min="2" max="500">
+      </div>
+      <div class="form-group">
+        <label for="pw_n">Average sample size per study (N)</label>
+        <input type="number" id="pw_n" value="200" min="10" max="100000">
+      </div>
+      <div class="form-group">
+        <label for="pw_effect">Expected effect size</label>
+        <input type="number" id="pw_effect" value="0.3" step="0.01">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="pw_i2">Expected I-squared (%)</label>
+        <input type="number" id="pw_i2" value="50" min="0" max="99" step="5">
+      </div>
+      <div class="form-group">
+        <label for="pw_alpha">Alpha (two-sided)</label>
+        <input type="number" id="pw_alpha" value="0.05" step="0.01" min="0.001" max="0.2">
+      </div>
+      <div class="form-group" style="justify-content:flex-end;">
+        <button class="btn btn-teal" id="calcPowerBtn" tabindex="0">Calculate Power</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="powerResult" style="display:none;">
+    <div id="powerBox" class="result-box result-green">
+      <div class="result-value" id="powerValue">--</div>
+      <div class="result-label">Statistical Power (1 - beta)</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Calculation Details</div>
+      <div id="powerDetails" style="font-size:0.88rem;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 2: SAMPLE SIZE ===== -->
+<div class="tab-panel" role="tabpanel" id="panel-sample" aria-labelledby="tab-sample">
+  <div class="card">
+    <div class="card-title">How Many Studies Are Needed?</div>
+    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">Given the desired power, effect size, and heterogeneity, how many studies (k) are needed?</p>
+    <div class="radio-group">
+      <label><input type="radio" name="ssEffectType" value="binary" checked> Binary outcome (OR/RR)</label>
+      <label><input type="radio" name="ssEffectType" value="continuous"> Continuous outcome (SMD/MD)</label>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="ss_power">Desired power</label>
+        <input type="number" id="ss_power" value="0.80" step="0.05" min="0.5" max="0.99">
+      </div>
+      <div class="form-group">
+        <label for="ss_n">Average sample size per study (N)</label>
+        <input type="number" id="ss_n" value="200" min="10" max="100000">
+      </div>
+      <div class="form-group">
+        <label for="ss_effect">Expected effect size</label>
+        <input type="number" id="ss_effect" value="0.3" step="0.01">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="ss_i2">Expected I-squared (%)</label>
+        <input type="number" id="ss_i2" value="50" min="0" max="99" step="5">
+      </div>
+      <div class="form-group">
+        <label for="ss_alpha">Alpha (two-sided)</label>
+        <input type="number" id="ss_alpha" value="0.05" step="0.01" min="0.001" max="0.2">
+      </div>
+      <div class="form-group" style="justify-content:flex-end;">
+        <button class="btn btn-teal" id="calcSampleBtn" tabindex="0">Calculate k</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sampleResult" style="display:none;">
+    <div id="sampleBox" class="result-box result-green">
+      <div class="result-value" id="sampleValue">--</div>
+      <div class="result-label" id="sampleLabel">studies needed</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Sensitivity to Heterogeneity</div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="sensTable">
+          <thead><tr><th>I-squared</th><th>k needed</th><th>Total patients</th></tr></thead>
+          <tbody id="sensBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 3: POWER CURVE ===== -->
+<div class="tab-panel" role="tabpanel" id="panel-curve" aria-labelledby="tab-curve">
+  <div class="card">
+    <div class="card-title">Power Curve</div>
+    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">Visualize how power changes with the number of studies.</p>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="cv_n">Average N per study</label>
+        <input type="number" id="cv_n" value="200" min="10">
+      </div>
+      <div class="form-group">
+        <label for="cv_effect">Effect size</label>
+        <input type="number" id="cv_effect" value="0.3" step="0.01">
+      </div>
+      <div class="form-group">
+        <label for="cv_alpha">Alpha</label>
+        <input type="number" id="cv_alpha" value="0.05" step="0.01">
+      </div>
+      <div class="form-group" style="justify-content:flex-end;">
+        <button class="btn btn-teal" id="drawCurveBtn" tabindex="0">Draw Curves</button>
+      </div>
+    </div>
+  </div>
+  <div id="curveResult" style="display:none;">
+    <div class="svg-container" id="curveSvg" aria-label="Power curve showing power vs number of studies"></div>
+    <div class="card" style="margin-top:1rem;">
+      <div class="card-title">Power at Key Study Counts</div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="curveTable">
+          <thead><tr><th>k</th><th>Power (I²=0%)</th><th>Power (I²=25%)</th><th>Power (I²=50%)</th><th>Power (I²=75%)</th></tr></thead>
+          <tbody id="curveBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 4: REPORT ===== -->
+<div class="tab-panel" role="tabpanel" id="panel-report" aria-labelledby="tab-report">
+  <div class="card">
+    <div class="card-title">Methods Text</div>
+    <div class="code-block" id="methodsText"><button class="copy-btn" data-target="methodsText" tabindex="0">Copy</button>Run a calculation first to generate the methods text.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">R Code Equivalent</div>
+    <div class="code-block" id="rCode"><button class="copy-btn" data-target="rCode" tabindex="0">Copy</button>Run a calculation first to generate R code.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">References</div>
+    <div style="font-size:0.85rem; color:var(--text-secondary);">
+      <p>1. Valentine JC, Pigott TD, Rothstein HR. How many studies do you need? A primer on statistical power for meta-analysis. <em>J Educ Behav Stat</em>. 2010;35(2):215-247.</p>
+      <p>2. Jackson D, Turner R. Power analysis for random-effects meta-analysis. <em>Res Synth Methods</em>. 2017;8(3):290-302.</p>
+      <p>3. Hedges LV, Pigott TD. The power of statistical tests for moderators in meta-analysis. <em>Psychol Methods</em>. 2004;9(4):426-445.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===========================================================
+   MA Power — Meta-Analysis Power & Sample Size Calculator
+   Based on Valentine et al. (2010), Jackson & Turner (2017)
+   =========================================================== */
+(function() {
+  'use strict';
+
+  function escapeHtml(s) { if (s==null)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+  var $ = function(id) { return document.getElementById(id); };
+
+  // ===== NORMAL DISTRIBUTION =====
+  function normalCDF(x) {
+    if (!isFinite(x)) return x > 0 ? 1 : 0;
+    var a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+    var sign = x < 0 ? -1 : 1; x = Math.abs(x)/Math.SQRT2;
+    var t = 1.0/(1.0+p*x);
+    var y = 1.0 - (((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+    return 0.5*(1.0+sign*y);
+  }
+  function normalQuantile(p) {
+    if (p<=0) return -Infinity; if (p>=1) return Infinity; if (p===0.5) return 0;
+    var a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+    var b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+    var c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+    var d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+    var pLow=0.02425,pHigh=1-pLow; var q,r;
+    if (p<pLow) { q=Math.sqrt(-2*Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+    else if (p<=pHigh) { q=p-0.5; r=q*q; return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1); }
+    else { q=Math.sqrt(-2*Math.log(1-p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  }
+  function fmtNum(v,dp) { if (v==null||!isFinite(v)) return '--'; return v.toFixed(dp!=null?dp:2); }
+
+  // ===== POWER CALCULATION ENGINE =====
+  // Based on Valentine et al. (2010) and Jackson & Turner (2017)
+  //
+  // For a random-effects MA with k studies, average N per study:
+  //   - Within-study variance: v_i = f(effect_type, N_i)
+  //   - Between-study variance: tau² derived from I² and v_bar
+  //   - Pooled SE: SE = sqrt(1 / sum(1/(v_i + tau²)))
+  //   - Power = Phi(|delta|/SE - z_{alpha/2})
+  //
+  // For binary outcomes (OR): v_i ≈ 4/N (approximate, assumes p=0.5)
+  //   More precisely: v_i = 1/(n*p*(1-p)) + 1/(n*(1-p)*p) for each arm
+  // For continuous outcomes (SMD): v_i ≈ 4/N + d²/(2N)
+
+  function computeWithinVar(effectType, effect, nPerStudy) {
+    var n = nPerStudy;
+    if (effectType === 'binary') {
+      // Log-OR variance approximation: v ≈ 4 * (1/n1 + 1/n2) for balanced arms
+      // With n1 = n2 = N/2: v ≈ 16/N
+      // More realistic: assume p_ctrl = 0.2, OR = exp(effect)
+      // v = 1/(n1*p1*(1-p1)) + 1/(n2*p2*(1-p2))
+      var n1 = Math.floor(n / 2);
+      var n2 = n - n1;
+      var pCtrl = 0.2;
+      var or = Math.exp(Math.abs(effect));
+      var pExp = (pCtrl * or) / (1 - pCtrl + pCtrl * or);
+      pExp = Math.max(0.01, Math.min(0.99, pExp));
+      return 1 / (n1 * pCtrl * (1 - pCtrl)) + 1 / (n2 * pExp * (1 - pExp));
+    } else {
+      // SMD variance: v ≈ (4/N)(1 + d²/8) — Hedges approximation
+      var d2 = effect * effect;
+      return (4 / n) * (1 + d2 / 8);
+    }
+  }
+
+  function computeTau2FromI2(i2Pct, vBar) {
+    // I² = tau² / (tau² + v_bar) => tau² = I² * v_bar / (1 - I²)
+    var i2 = i2Pct / 100;
+    if (i2 >= 1) i2 = 0.99;
+    if (i2 <= 0) return 0;
+    return i2 * vBar / (1 - i2);
+  }
+
+  function computePower(k, nPerStudy, effect, i2Pct, alpha, effectType) {
+    if (k < 1 || nPerStudy < 2 || Math.abs(effect) < 1e-10) return 0;
+
+    var vBar = computeWithinVar(effectType, effect, nPerStudy);
+    var tau2 = computeTau2FromI2(i2Pct, vBar);
+
+    // Sum of inverse-variance weights: sum(1/(v_i + tau²))
+    // Assuming equal study sizes: sum = k / (v_bar + tau²)
+    var wStar = k / (vBar + tau2);
+    var sePoopled = 1 / Math.sqrt(wStar);
+
+    var zAlpha = normalQuantile(1 - alpha / 2);
+    var lambda = Math.abs(effect) / sePoopled; // non-centrality parameter
+
+    // Power = P(|Z| > z_alpha | Z ~ N(lambda, 1))
+    // = Phi(lambda - z_alpha) + Phi(-lambda - z_alpha)
+    // ≈ Phi(lambda - z_alpha) for lambda > 0
+    var power = normalCDF(lambda - zAlpha) + normalCDF(-lambda - zAlpha);
+    return Math.max(0, Math.min(1, power));
+  }
+
+  function computeRequiredK(targetPower, nPerStudy, effect, i2Pct, alpha, effectType) {
+    if (Math.abs(effect) < 1e-10) return Infinity;
+    // Binary search for k
+    var lo = 2, hi = 1000;
+    while (lo < hi) {
+      var mid = Math.floor((lo + hi) / 2);
+      var pw = computePower(mid, nPerStudy, effect, i2Pct, alpha, effectType);
+      if (pw >= targetPower) {
+        hi = mid;
+      } else {
+        lo = mid + 1;
+      }
+    }
+    return lo;
+  }
+
+  // ===== STORED RESULT FOR REPORT =====
+  var lastResult = null;
+
+  // ===== POWER TAB =====
+  function handlePowerCalc() {
+    var effectType = document.querySelector('input[name="effectType"]:checked').value;
+    var k = parseInt($('pw_k').value) || 10;
+    var n = parseInt($('pw_n').value) || 200;
+    var effect = parseFloat($('pw_effect').value) || 0.3;
+    var i2 = parseFloat($('pw_i2').value) ?? 50;
+    var alpha = parseFloat($('pw_alpha').value) || 0.05;
+
+    var power = computePower(k, n, effect, i2, alpha, effectType);
+
+    $('powerResult').style.display = '';
+    $('powerValue').textContent = (power * 100).toFixed(1) + '%';
+
+    var box = $('powerBox');
+    box.className = 'result-box ' + (power >= 0.8 ? 'result-green' : power >= 0.5 ? 'result-amber' : 'result-red');
+
+    // Details
+    var vBar = computeWithinVar(effectType, effect, n);
+    var tau2 = computeTau2FromI2(i2, vBar);
+    var wStar = k / (vBar + tau2);
+    var se = 1 / Math.sqrt(wStar);
+
+    var html = '<p><strong>Effect type:</strong> ' + (effectType === 'binary' ? 'Binary (log-OR scale)' : 'Continuous (SMD)') + '</p>';
+    html += '<p><strong>Expected effect:</strong> ' + fmtNum(effect, 3) + ' | <strong>k:</strong> ' + k + ' | <strong>Average N:</strong> ' + n + '</p>';
+    html += '<p><strong>Within-study variance (v&#773;):</strong> ' + fmtNum(vBar, 4) + '</p>';
+    html += '<p><strong>Between-study variance (tau' + String.fromCharCode(178) + '):</strong> ' + fmtNum(tau2, 4) + ' (I' + String.fromCharCode(178) + ' = ' + fmtNum(i2, 0) + '%)</p>';
+    html += '<p><strong>Pooled SE:</strong> ' + fmtNum(se, 4) + '</p>';
+    html += '<p><strong>Non-centrality:</strong> ' + fmtNum(Math.abs(effect) / se, 2) + ' | <strong>z_' + fmtNum(alpha, 2) + ':</strong> ' + fmtNum(normalQuantile(1 - alpha / 2), 3) + '</p>';
+
+    if (power < 0.8) {
+      var kNeeded = computeRequiredK(0.8, n, effect, i2, alpha, effectType);
+      html += '<p style="color:var(--amber); font-weight:600;">To achieve 80% power, you would need at least <strong>' + kNeeded + ' studies</strong>.</p>';
+    }
+    $('powerDetails').innerHTML = html;
+
+    lastResult = { type: 'power', effectType: effectType, k: k, n: n, effect: effect, i2: i2, alpha: alpha, power: power, tau2: tau2, vBar: vBar, se: se };
+    updateReport();
+  }
+
+  // ===== SAMPLE SIZE TAB =====
+  function handleSampleCalc() {
+    var effectType = document.querySelector('input[name="ssEffectType"]:checked').value;
+    var targetPower = parseFloat($('ss_power').value) || 0.8;
+    var n = parseInt($('ss_n').value) || 200;
+    var effect = parseFloat($('ss_effect').value) || 0.3;
+    var i2 = parseFloat($('ss_i2').value) ?? 50;
+    var alpha = parseFloat($('ss_alpha').value) || 0.05;
+
+    var kNeeded = computeRequiredK(targetPower, n, effect, i2, alpha, effectType);
+    var actualPower = computePower(kNeeded, n, effect, i2, alpha, effectType);
+
+    $('sampleResult').style.display = '';
+    $('sampleValue').textContent = kNeeded > 999 ? '>999' : String(kNeeded);
+    $('sampleLabel').textContent = 'studies needed for ' + (targetPower * 100).toFixed(0) + '% power';
+
+    var box = $('sampleBox');
+    box.className = 'result-box ' + (kNeeded <= 10 ? 'result-green' : kNeeded <= 30 ? 'result-amber' : 'result-red');
+
+    // Sensitivity table: vary I²
+    var i2Vals = [0, 25, 50, 75, 90];
+    var html = '';
+    for (var j = 0; j < i2Vals.length; j++) {
+      var kj = computeRequiredK(targetPower, n, effect, i2Vals[j], alpha, effectType);
+      var bold = i2Vals[j] === Math.round(i2) ? ' style="font-weight:700;"' : '';
+      html += '<tr' + bold + '><td>' + i2Vals[j] + '%</td><td>' + (kj > 999 ? '>999' : kj) + '</td><td>' + (kj > 999 ? '--' : (kj * n).toLocaleString()) + '</td></tr>';
+    }
+    $('sensBody').innerHTML = html;
+
+    lastResult = { type: 'sample', effectType: effectType, k: kNeeded, n: n, effect: effect, i2: i2, alpha: alpha, power: actualPower, targetPower: targetPower };
+    updateReport();
+  }
+
+  // ===== POWER CURVE TAB =====
+  function handleCurve() {
+    var n = parseInt($('cv_n').value) || 200;
+    var effect = parseFloat($('cv_effect').value) || 0.3;
+    var alpha = parseFloat($('cv_alpha').value) || 0.05;
+
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var bg = dark ? '#252525' : '#fff';
+    var text = dark ? '#e4e4e7' : '#212529';
+    var grid = dark ? '#3f3f46' : '#e9ecef';
+    var muted = dark ? '#71717a' : '#adb5bd';
+
+    var i2Vals = [0, 25, 50, 75];
+    var colors = ['#27ae60', '#2980b9', '#f39c12', '#e74c3c'];
+    var kMax = 50;
+    var W = 700, H = 400;
+    var margin = { top: 35, right: 100, bottom: 45, left: 60 };
+    var plotW = W - margin.left - margin.right;
+    var plotH = H - margin.top - margin.bottom;
+
+    var xScale = function(k) { return margin.left + (k / kMax) * plotW; };
+    var yScale = function(p) { return margin.top + plotH - p * plotH; };
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img">';
+    svg += '<title>Power curves showing statistical power vs number of studies at different heterogeneity levels</title>';
+    svg += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="' + bg + '"/>';
+    svg += '<text x="' + (W / 2) + '" y="22" text-anchor="middle" fill="' + text + '" font-size="13" font-weight="600">Power vs Number of Studies</text>';
+
+    // Grid
+    for (var g = 0; g <= 10; g++) {
+      var gy = yScale(g / 10);
+      svg += '<line x1="' + margin.left + '" y1="' + gy + '" x2="' + (margin.left + plotW) + '" y2="' + gy + '" stroke="' + grid + '" stroke-width="0.5"/>';
+      svg += '<text x="' + (margin.left - 8) + '" y="' + (gy + 4) + '" text-anchor="end" fill="' + muted + '" font-size="9">' + (g * 10) + '%</text>';
+    }
+    for (var x = 0; x <= kMax; x += 5) {
+      var xx = xScale(x);
+      svg += '<text x="' + xx + '" y="' + (H - margin.bottom + 18) + '" text-anchor="middle" fill="' + muted + '" font-size="9">' + x + '</text>';
+    }
+
+    // 80% power line
+    var y80 = yScale(0.8);
+    svg += '<line x1="' + margin.left + '" y1="' + y80 + '" x2="' + (margin.left + plotW) + '" y2="' + y80 + '" stroke="' + muted + '" stroke-width="1" stroke-dasharray="6,4"/>';
+    svg += '<text x="' + (margin.left + 3) + '" y="' + (y80 - 4) + '" fill="' + muted + '" font-size="9">80% power</text>';
+
+    // Curves
+    var tableData = {};
+    var kPoints = [5, 10, 15, 20, 30, 50];
+
+    for (var c = 0; c < i2Vals.length; c++) {
+      var path = '';
+      tableData[i2Vals[c]] = {};
+      for (var k = 2; k <= kMax; k++) {
+        var pw = computePower(k, n, effect, i2Vals[c], alpha, 'continuous');
+        var px = xScale(k);
+        var py = yScale(pw);
+        path += (k === 2 ? 'M' : 'L') + px.toFixed(1) + ',' + py.toFixed(1);
+        if (kPoints.indexOf(k) >= 0) tableData[i2Vals[c]][k] = pw;
+      }
+      svg += '<path d="' + path + '" fill="none" stroke="' + colors[c] + '" stroke-width="2.5"/>';
+
+      // Legend
+      var ly = margin.top + 15 + c * 18;
+      svg += '<line x1="' + (margin.left + plotW + 10) + '" y1="' + ly + '" x2="' + (margin.left + plotW + 30) + '" y2="' + ly + '" stroke="' + colors[c] + '" stroke-width="2.5"/>';
+      svg += '<text x="' + (margin.left + plotW + 35) + '" y="' + (ly + 4) + '" fill="' + text + '" font-size="10">I' + String.fromCharCode(178) + '=' + i2Vals[c] + '%</text>';
+    }
+
+    // Axis labels
+    svg += '<text x="' + (W / 2) + '" y="' + (H - 5) + '" text-anchor="middle" fill="' + muted + '" font-size="11">Number of Studies (k)</text>';
+    svg += '</svg>';
+
+    $('curveSvg').innerHTML = svg;
+    $('curveResult').style.display = '';
+
+    // Table
+    var thtml = '';
+    for (var p = 0; p < kPoints.length; p++) {
+      var k = kPoints[p];
+      thtml += '<tr><td style="font-weight:600;">' + k + '</td>';
+      for (var c = 0; c < i2Vals.length; c++) {
+        var pw = tableData[i2Vals[c]][k];
+        var pwStr = pw != null ? (pw * 100).toFixed(1) + '%' : '--';
+        var style = pw >= 0.8 ? 'color:var(--green);font-weight:600' : pw >= 0.5 ? 'color:var(--amber)' : 'color:var(--red)';
+        thtml += '<td style="' + style + '">' + pwStr + '</td>';
+      }
+      thtml += '</tr>';
+    }
+    $('curveBody').innerHTML = thtml;
+  }
+
+  // ===== REPORT =====
+  function updateReport() {
+    if (!lastResult) return;
+    var r = lastResult;
+
+    var methods;
+    if (r.type === 'power') {
+      methods = 'A priori power analysis for the planned meta-analysis was conducted following Valentine et al. (2010). ' +
+        'Assuming ' + r.k + ' studies with an average sample size of ' + r.n + ' participants, ' +
+        'an expected effect size of ' + fmtNum(r.effect, 3) + ' (' + (r.effectType === 'binary' ? 'log-OR' : 'SMD') + '), ' +
+        'and anticipated between-study heterogeneity of I' + String.fromCharCode(178) + ' = ' + fmtNum(r.i2, 0) + '%, ' +
+        'the estimated statistical power to detect the expected effect at alpha = ' + fmtNum(r.alpha, 2) + ' (two-sided) was ' +
+        (r.power * 100).toFixed(1) + '%.';
+    } else {
+      methods = 'Sample size planning for the meta-analysis was conducted following Valentine et al. (2010). ' +
+        'To achieve ' + (r.targetPower * 100).toFixed(0) + '% power to detect an expected effect of ' +
+        fmtNum(r.effect, 3) + ' (' + (r.effectType === 'binary' ? 'log-OR' : 'SMD') + ') ' +
+        'with average study size ' + r.n + ' and anticipated I' + String.fromCharCode(178) + ' = ' + fmtNum(r.i2, 0) + '%, ' +
+        'a minimum of ' + r.k + ' studies would be required (alpha = ' + fmtNum(r.alpha, 2) + ', two-sided).';
+    }
+
+    var methodsEl = $('methodsText');
+    var copyBtn = methodsEl.querySelector('.copy-btn');
+    methodsEl.textContent = methods;
+    methodsEl.appendChild(copyBtn);
+
+    var rCode = '# MA Power Analysis (R equivalent)\n' +
+      '# Using metapower package (Quintana 2022)\n' +
+      'library(metapower)\n\n' +
+      'result <- mpower(\n' +
+      '  effect_size = ' + fmtNum(r.effect, 3) + ',\n' +
+      '  study_size = ' + r.n + ',\n' +
+      '  k = ' + r.k + ',\n' +
+      '  i2 = ' + fmtNum(r.i2 / 100, 2) + ',\n' +
+      '  es_type = "' + (r.effectType === 'binary' ? 'or' : 'd') + '"\n' +
+      ')\n' +
+      'print(result)\n' +
+      'plot_mpower(result)';
+
+    var rBlock = $('rCode');
+    var rCopyBtn = rBlock.querySelector('.copy-btn');
+    rBlock.textContent = rCode;
+    rBlock.appendChild(rCopyBtn);
+  }
+
+  // ===== TAB & THEME =====
+  function showTab(name) {
+    var tabs = document.querySelectorAll('.tab-btn');
+    var panels = document.querySelectorAll('.tab-panel');
+    for (var i = 0; i < tabs.length; i++) {
+      var tn = tabs[i].id.replace('tab-', '');
+      tabs[i].classList.toggle('active', tn === name);
+      tabs[i].setAttribute('aria-selected', tn === name ? 'true' : 'false');
+      tabs[i].setAttribute('tabindex', tn === name ? '0' : '-1');
+    }
+    for (var i = 0; i < panels.length; i++) {
+      panels[i].classList.toggle('active', panels[i].id === 'panel-' + name);
+    }
+  }
+
+  function init() {
+    // Tabs
+    var tabs = document.querySelectorAll('.tab-btn');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].addEventListener('click', function() { showTab(this.id.replace('tab-', '')); });
+      tabs[i].addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+        var tabList = Array.from(document.querySelectorAll('.tab-btn'));
+        var idx = tabList.indexOf(this);
+        if (e.key === 'ArrowRight') { e.preventDefault(); var next = tabList[(idx+1)%tabList.length]; next.click(); next.focus(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); var prev = tabList[(idx-1+tabList.length)%tabList.length]; prev.click(); prev.focus(); }
+      });
+    }
+
+    // Theme
+    var themeBtn = $('themeToggle');
+    try { if (localStorage.getItem('mapower-theme')==='dark') { document.documentElement.setAttribute('data-theme','dark'); themeBtn.textContent='Light Mode'; } } catch(e){}
+    themeBtn.addEventListener('click', function() {
+      var next = document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      themeBtn.textContent = next==='dark' ? 'Light Mode' : 'Dark Mode';
+      try{localStorage.setItem('mapower-theme',next);}catch(e){}
+    });
+
+    // Buttons
+    $('calcPowerBtn').addEventListener('click', handlePowerCalc);
+    $('calcSampleBtn').addEventListener('click', handleSampleCalc);
+    $('drawCurveBtn').addEventListener('click', handleCurve);
+
+    // Copy buttons
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('copy-btn')) {
+        var targetId = e.target.getAttribute('data-target');
+        var el = $(targetId);
+        if (el) {
+          var clone = el.cloneNode(true);
+          var btns = clone.querySelectorAll('.copy-btn');
+          for (var b = 0; b < btns.length; b++) btns[b].remove();
+          navigator.clipboard.writeText(clone.textContent).then(function() {
+            var orig = e.target.textContent; e.target.textContent = 'Copied!';
+            setTimeout(function(){e.target.textContent=orig;},1500);
+          });
+        }
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>
