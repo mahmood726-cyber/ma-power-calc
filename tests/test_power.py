@@ -8,7 +8,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.options import Options
 
-HTML = 'file:///' + os.path.abspath(r'C:\Models\MAPowerCalc\ma-power.html').replace('\\', '/')
+HTML = 'file:///' + os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', 'ma-power.html')
+).replace('\\', '/')
 
 
 class TestMAPower(unittest.TestCase):

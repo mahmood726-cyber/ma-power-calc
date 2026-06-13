@@ -15,7 +15,7 @@ MA Power computes statistical power for planned random-effects meta-analyses and
 - Support for binary outcomes (odds ratio, risk ratio) and continuous outcomes (SMD, mean difference)
 - Within-study variance formulae appropriate to each effect measure
 - Between-study variance (tau-squared) derived from expected I-squared and average within-study variance
-- Sensitivity table showing required k across multiple I-squared levels (0%, 25%, 50%, 75%)
+- Sensitivity table showing required k across multiple I-squared levels (0%, 25%, 50%, 75%, 90%)
 - Interactive power curve plots at four heterogeneity levels
 - Tabulated power at key study counts (k = 5, 10, 15, 20, 30, 50)
 - Colour-coded power result (green >= 80%, amber 50-79%, red < 50%)
